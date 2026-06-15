@@ -3,70 +3,88 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My Frontend Page</title>
+  <title>Login Page</title>
 
   <style>
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      background-color: #f4f4f4;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    header {
-      background-color: #4CAF50;
-      color: white;
-      padding: 15px;
+    .login-box {
+      background: white;
+      padding: 30px;
+      width: 320px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
       text-align: center;
     }
 
-    .container {
-      padding: 20px;
-      text-align: center;
+    .login-box h2 {
+      margin-bottom: 20px;
+      color: #333;
     }
 
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
       border-radius: 5px;
     }
 
-    button:hover {
-      background-color: #0056b3;
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
     }
 
-    .box {
-      margin-top: 20px;
-      padding: 15px;
-      background: white;
-      display: inline-block;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    button:hover {
+      background: #5a67d8;
+    }
+
+    .msg {
+      margin-top: 15px;
+      font-size: 14px;
+      color: green;
     }
   </style>
 </head>
 
 <body>
 
-  <header>
-    <h1>Welcome to My Frontend Page</h1>
-  </header>
+  <div class="login-box">
+    <h2>Login</h2>
 
-  <div class="container">
-    <button onclick="showMessage()">Click Me</button>
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
 
-    <div class="box" id="messageBox">
-      Message will appear here
-    </div>
+    <button onclick="login()">Login</button>
+
+    <div class="msg" id="msg"></div>
   </div>
 
   <script>
-    function showMessage() {
-      document.getElementById("messageBox").innerText =
-        "Hello! You clicked the button 🎉";
+    function login() {
+      let user = document.getElementById("username").value;
+      let pass = document.getElementById("password").value;
+
+      if (user === "admin" && pass === "admin") {
+        document.getElementById("msg").innerText = "Login Successful ✅";
+      } else {
+        document.getElementById("msg").innerText = "Invalid Credentials ❌";
+        document.getElementById("msg").style.color = "red";
+      }
     }
   </script>
 
