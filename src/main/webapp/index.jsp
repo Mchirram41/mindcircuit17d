@@ -1,116 +1,74 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindCircuit</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Frontend Page</title>
 
-    <style>
-        :root {
-            --primary-orange: #f97316;
-            --primary-orange-dark: #ea580c;
-            --background: #fffaf5;
-            --text-color: #333333;
-        }
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    header {
+      background-color: #4CAF50;
+      color: white;
+      padding: 15px;
+      text-align: center;
+    }
 
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background-color: var(--background);
-            color: var(--text-color);
-            line-height: 1.6;
-        }
+    .container {
+      padding: 20px;
+      text-align: center;
+    }
 
-        header {
-            background-color: var(--primary-orange);
-            color: #ffffff;
-            padding: 2rem;
-            text-align: center;
-        }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
 
-        main {
-            max-width: 900px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
+    button:hover {
+      background-color: #0056b3;
+    }
 
-        section {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        h1, h2 {
-            margin-bottom: 1rem;
-        }
-
-        .highlight {
-            color: var(--primary-orange-dark);
-            font-weight: bold;
-        }
-
-        footer {
-            text-align: center;
-            padding: 1rem;
-            background-color: var(--primary-orange);
-            color: #ffffff;
-            margin-top: 2rem;
-        }
-    </style>
+    .box {
+      margin-top: 20px;
+      padding: 15px;
+      background: white;
+      display: inline-block;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
+
 <body>
 
-<header>
-    <h1>MindCircuit</h1>
-    <p>Innovate. Connect. Transform.</p>
-</header>
+  <header>
+    <h1>Welcome to My Frontend Page</h1>
+  </header>
 
-<main>
-    <section>
-        <h2>Welcome</h2>
-        <p>
-            Welcome to <span class="highlight">MindCircuit</span>,
-            a platform designed to inspire innovation and streamline digital solutions.
-        </p>
-    </section>
+  <div class="container">
+    <button onclick="showMessage()">Click Me</button>
 
-    <section>
-        <h2>User Portal</h2>
+    <div class="box" id="messageBox">
+      Message will appear here
+    </div>
+  </div>
 
-        <c:choose>
-            <c:when test="${not empty username}">
-                <p>
-                    Hello,
-                    <span class="highlight">
-                        <c:out value="${username}" />
-                    </span>!
-                </p>
-            </c:when>
-            <c:otherwise>
-                <p>Hello, Guest! Please sign in to access your dashboard.</p>
-            </c:otherwise>
-        </c:choose>
-    </section>
-
-    <section>
-        <h2>System Status</h2>
-        <p>Application is running successfully.</p>
-    </section>
-</main>
-
-<footer>
-    <p>&copy; 2026 MindCircuit. All rights reserved.</p>
-</footer>
+  <script>
+    function showMessage() {
+      document.getElementById("messageBox").innerText =
+        "Hello! You clicked the button 🎉";
+    }
+  </script>
 
 </body>
 </html>
