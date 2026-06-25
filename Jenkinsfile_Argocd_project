@@ -2,206 +2,194 @@ pipeline {
     agent any
 
     tools {
-        maven 'maven_3.9.16'
+        maven 'mvn'
+    }
+
+    environment {
+        APP_URL = 'http://ae794b08ddf1a4daca38a66ea7942db8-393022479.us-east-1.elb.amazonaws.com'
+        GIT_USER_NAME = 'Mchirram41'
+        GIT_REPO_NAME = 'new-argocd'
     }
 
     stages {
 
-        stage('Checkout') {
+        stage('Git Checkout') {
             steps {
-                echo 'Checkout Git repo'
                 git branch: 'main',
-                    url: 'https://github.com/devopstraininghub/mindcircuit17d.git'
+                    url: 'https://github.com/Mchirram41/mindcircuit17d.git'
+            }
+        }
+
+        stage('Maven Compile') {
+            steps {
+                sh 'mvn clean compile'
             }
         }
 
         stage('SonarQube Scan') {
             steps {
-                echo 'Scanning project'
-                sh 'ls -ltr'
+                withSonarQubeEnv('sonar') {
+                    sh 'mvn sonar:sonar'
+                }
+            }
+        }
 
-                sh '''
-                    mvn sonar:sonar \
-                    -Dsonar.host.url=http://100.31.37.172:9000 \
-                    -Dsonar.token=squ_0f39becdb864b01079c7ca1c09c68e6d1353446f
-                '''
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
             }
         }
 
         stage('Build Artifact') {
             steps {
-                echo 'Build Artifact'
                 sh 'mvn clean package'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo 'Build Docker Image'
-
                 sh '''
-                    docker build -t devopshubg333/batch17d:${BUILD_NUMBER} -f Dockerfile .
+                    docker build -t mnlove/argo-cd:${BUILD_NUMBER} -f Dockerfile .
                 '''
             }
         }
 
         stage('Scan Docker Image using Trivy') {
             steps {
-                echo 'Scanning Image'
-
                 sh '''
-                    trivy image devopshubg333/batch17d:${BUILD_NUMBER}
+                    trivy image --exit-code 0 --severity HIGH,CRITICAL \
+                    mnlove/argo-cd:${BUILD_NUMBER}
                 '''
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                script {
-                    withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'docker',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASSWORD" | docker login \
+                          -u "$DOCKER_USERNAME" --password-stdin
 
-                        sh '''
-                            docker login -u devopshubg333 -p ${dockerhub}
-                        '''
+                        docker push mnlove/argo-cd:${BUILD_NUMBER}
+                    '''
+                }
+            }
+        }
 
-                        sh '''
-                            docker push devopshubg333/batch17d:${BUILD_NUMBER}
-                        '''
-                    }
-
-                    echo 'Pushed to Docker Hub'
+        stage('Checkout Deployment Repository') {
+            steps {
+                dir('new-argocd') {
+                    git branch: 'main',
+                        url: 'https://github.com/Mchirram41/new-argocd.git'
                 }
             }
         }
 
         stage('Update Deployment File') {
-
-            environment {
-                GIT_REPO_NAME = "mindcircuit17d"
-                GIT_USER_NAME = "devopstraininghub"
-            }
-
             steps {
-                echo 'Update Deployment File'
-
-                withCredentials([string(credentialsId: 'githubtoken', variable: 'githubtoken')]) {
-
-                    sh '''
-                        git config user.email "madhuxxxx123@gmail.com"
-                        git config user.name "Madhu"
-
-                        sed -i "s/batch17d:.*/batch17d:${BUILD_NUMBER}/g" deploymentfiles/deploy.yaml
-
-                        git add .
-                        git commit -m "Update deployment image to version ${BUILD_NUMBER}" || true
-
-                        git push https://${githubtoken}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
-                    '''
-                }
-            }
-        }
-    }
-}pipeline {
-    agent any
-
-    tools {
-        maven 'maven_3.9.16'
-    }
-
-    stages {
-
-        stage('Checkout') {
-            steps {
-                echo 'Checkout Git repo'
-                git branch: 'main',
-                    url: 'https://github.com/devopstraininghub/mindcircuit17d.git'
-            }
-        }
-
-        stage('SonarQube Scan') {
-            steps {
-                echo 'Scanning project'
-                sh 'ls -ltr'
-
-                sh '''
-                    mvn sonar:sonar \
-                    -Dsonar.host.url=http://100.31.37.172:9000 \
-                    -Dsonar.token=squ_0f39becdb864b01079c7ca1c09c68e6d1353446f
-                '''
-            }
-        }
-
-        stage('Build Artifact') {
-            steps {
-                echo 'Build Artifact'
-                sh 'mvn clean package'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                echo 'Build Docker Image'
-
-                sh '''
-                    docker build -t devopshubg333/batch17d:${BUILD_NUMBER} -f Dockerfile .
-                '''
-            }
-        }
-
-        stage('Scan Docker Image using Trivy') {
-            steps {
-                echo 'Scanning Image'
-
-                sh '''
-                    trivy image devopshubg333/batch17d:${BUILD_NUMBER}
-                '''
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                script {
-                    withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
-
+                dir('new-argocd') {
+                    withCredentials([
+                        string(
+                            credentialsId: 'git',
+                            variable: 'githubtoken'
+                        )
+                    ]) {
                         sh '''
-                            docker login -u devopshubg333 -p ${dockerhub}
-                        '''
+                            git config user.email "mahesh@123"
+                            git config user.name "Mahesh"
 
-                        sh '''
-                            docker push devopshubg333/batch17d:${BUILD_NUMBER}
+                            sed -i "s|mnlove/argo-cd:.*|mnlove/argo-cd:${BUILD_NUMBER}|g" \
+                              k8s/Deployment.yml
+
+                            git add k8s/Deployment.yml
+                            git commit -m "Update deployment image to version ${BUILD_NUMBER}" || true
+
+                            git push https://${githubtoken}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
                         '''
                     }
-
-                    echo 'Pushed to Docker Hub'
                 }
             }
         }
 
-        stage('Update Deployment File') {
-
-            environment {
-                GIT_REPO_NAME = "mindcircuit17d"
-                GIT_USER_NAME = "devopstraininghub"
-            }
-
+        stage('Wait for ArgoCD Deployment') {
             steps {
-                echo 'Update Deployment File'
-
-                withCredentials([string(credentialsId: 'githubtoken', variable: 'githubtoken')]) {
-
-                    sh '''
-                        git config user.email "madhuxxxx123@gmail.com"
-                        git config user.name "Madhu"
-
-                        sed -i "s/batch17d:.*/batch17d:${BUILD_NUMBER}/g" deploymentfiles/deploy.yaml
-
-                        git add .
-                        git commit -m "Update deployment image to version ${BUILD_NUMBER}" || true
-
-                        git push https://${githubtoken}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
-                    '''
-                }
+                sh '''
+                    echo "Waiting for ArgoCD to sync the new image..."
+                    sleep 90
+                '''
             }
+        }
+
+        stage('Check Application Health') {
+            steps {
+                sh '''
+                    for i in {1..12}; do
+                        if curl -fsS -I "${APP_URL}" > /dev/null; then
+                            echo "Application is reachable."
+                            exit 0
+                        fi
+
+                        echo "Application is not ready yet. Retrying in 15 seconds..."
+                        sleep 15
+                    done
+
+                    echo "Application did not become reachable."
+                    exit 1
+                '''
+            }
+        }
+
+        stage('DAST Scan using OWASP ZAP') {
+            steps {
+                sh '''
+                    rm -rf zap-reports
+                    mkdir -p zap-reports
+                    chmod 777 zap-reports
+
+                    docker run --rm \
+                      --user root \
+                      -v "$(pwd)/zap-reports:/zap/wrk/:rw" \
+                      ghcr.io/zaproxy/zaproxy:stable \
+                      zap-baseline.py \
+                      -t "${APP_URL}" \
+                      -m 3 \
+                      -r zap-report.html \
+                      -J zap-report.json \
+                      -I
+
+                    docker run --rm \
+                      --user root \
+                      -v "$(pwd)/zap-reports:/reports:rw" \
+                      alpine:latest \
+                      sh -c "chown -R $(id -u):$(id -g) /reports && chmod -R 755 /reports"
+
+                    echo "DAST report files:"
+                    ls -la zap-reports
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'zap-reports/*', allowEmptyArchive: true
+            sh 'docker logout || true'
+        }
+
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+
+        failure {
+            echo 'Pipeline execution failed! Check Jenkins console logs and ZAP report artifacts.'
         }
     }
 }
