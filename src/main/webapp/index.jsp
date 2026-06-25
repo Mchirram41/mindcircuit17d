@@ -2,91 +2,137 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login Page</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevSecOps Demo - Login</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      background: #f4f6f8;
     }
 
     .login-box {
+      width: 360px;
       background: white;
-      padding: 30px;
-      width: 320px;
+      padding: 32px;
       border-radius: 10px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      text-align: center;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
     }
 
-    .login-box h2 {
-      margin-bottom: 20px;
-      color: #333;
+    h2 {
+      text-align: center;
+      margin: 0 0 8px;
+    }
+
+    p {
+      text-align: center;
+      color: #666;
+      margin: 0 0 25px;
+    }
+
+    label {
+      display: block;
+      margin: 15px 0 6px;
+      font-size: 14px;
+      font-weight: bold;
     }
 
     input {
       width: 100%;
-      padding: 10px;
-      margin: 10px 0;
+      padding: 12px;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 6px;
+      font-size: 14px;
     }
 
     button {
       width: 100%;
-      padding: 10px;
-      background: #667eea;
-      color: white;
+      margin-top: 24px;
+      padding: 12px;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
+      background: #2563eb;
+      color: white;
+      font-size: 15px;
       cursor: pointer;
-      font-size: 16px;
     }
 
     button:hover {
-      background: #5a67d8;
+      background: #1d4ed8;
     }
 
-    .msg {
+    #message {
+      text-align: center;
       margin-top: 15px;
       font-size: 14px;
-      color: green;
+      min-height: 18px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #777;
     }
   </style>
 </head>
 
 <body>
-
   <div class="login-box">
-    <h2>Login</h2>
+    <h2>DevSecOps Demo App</h2>
+    <p>Login to continue</p>
 
-    <input type="text" id="username" placeholder="Username" />
-    <input type="password" id="password" placeholder="Password" />
+    <form id="loginForm">
+      <label for="username">Username</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        placeholder="Enter username"
+        required
+      />
 
-    <button onclick="login()">Login</button>
+      <label for="password">Password</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="Enter password"
+        required
+      />
 
-    <div class="msg" id="msg"></div>
+      <button type="submit">Login</button>
+      <div id="message"></div>
+    </form>
+
+    <div class="footer">For DevSecOps / DAST testing</div>
   </div>
 
   <script>
-    function login() {
-      let user = document.getElementById("username").value;
-      let pass = document.getElementById("password").value;
+    document.getElementById("loginForm").addEventListener("submit", function (event) {
+      event.preventDefault();
 
-      if (user === "admin" && pass === "admin") {
-        document.getElementById("msg").innerText = "Login Successful ✅";
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const message = document.getElementById("message");
+
+      if (username === "admin" && password === "admin123") {
+        message.style.color = "green";
+        message.innerText = "Login successful!";
       } else {
-        document.getElementById("msg").innerText = "Invalid Credentials ❌";
-        document.getElementById("msg").style.color = "red";
+        message.style.color = "red";
+        message.innerText = "Invalid username or password";
       }
-    }
+    });
   </script>
-
 </body>
 </html>
