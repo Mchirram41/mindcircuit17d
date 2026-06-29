@@ -1,0 +1,80 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'mvn'   // <-- This name must match Jenkins Global Tool Configuration
+    }
+
+    environment {
+        AWS_REGION      = "us-east-1"
+        AWS_ACCOUNT_ID  = "998230061098"
+        ECR_REPOSITORY  = "banking-app"
+        IMAGE_TAG       = "${BUILD_NUMBER}"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Mchirram41/mindcircuit17d.git'
+            }
+        }
+
+        stage('Build with Maven') {
+            steps {
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh """
+                docker build -t ${ECR_REPOSITORY}:${IMAGE_TAG} .
+                """
+            }
+        }
+
+        stage('Login to Amazon ECR') {
+            steps {
+                sh """
+                aws ecr get-login-password --region ${AWS_REGION} | \
+                docker login --username AWS \
+                --password-stdin \
+                ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                """
+            }
+        }
+
+        stage('Tag Docker Image') {
+            steps {
+                sh """
+                docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} \
+                ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}
+                """
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                sh """
+                docker push \
+                ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}
+                """
+            }
+        }
+    }
+
+    post {
+        always {
+            sh 'docker image prune -f'
+        }
+
+        success {
+            echo "Docker image successfully pushed to Amazon ECR."
+        }
+
+        failure {
+            echo "Pipeline failed."
+        }
+    }
+}
